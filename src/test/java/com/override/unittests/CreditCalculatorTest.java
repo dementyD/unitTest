@@ -9,11 +9,12 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.doReturn;
@@ -33,21 +34,17 @@ class CreditCalculatorTest {
      * Метод тестирует сразу все типы клиентов
      */
     @ParameterizedTest
-    @EnumSource(ClientType.class)
-    public void calculateOverpaymentAllTypeClientTest(ClientType clientType) {
+    @CsvSource({
+            "GOVERMENT, 10000",
+            "BUSINESS, 11000",
+            "INDIVIDUAL, 12000",
+    })
+    public void calculateOverpaymentAllTypeClientTest(ClientType clientType, Double doubles) {
         when(centralBankService.getKeyRate()).thenReturn(10d);
         double amount = 100000d;
         double monthPaymentAmount = 10000d;
         double result = creditCalculator.calculateOverpayment(amount, monthPaymentAmount, clientType);
-        if (clientType == ClientType.GOVERMENT) {
-            Assertions.assertEquals(10000d, result);
-        }
-        if (clientType == ClientType.BUSINESS) {
-            Assertions.assertEquals(11000d, result);
-        }
-        if (clientType == ClientType.INDIVIDUAL) {
-            Assertions.assertEquals(12000d, result);
-        }
+        Assertions.assertEquals(doubles, result);
     }
 
     @Test
